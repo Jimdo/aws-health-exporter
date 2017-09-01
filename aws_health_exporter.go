@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -17,6 +16,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/common/version"
+	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 const (
@@ -56,8 +56,9 @@ var (
 )
 
 type exporter struct {
-	api healthiface.HealthAPI
-	m   sync.Mutex
+	api    healthiface.HealthAPI
+	filter *health.EventFilter
+	m      sync.Mutex
 }
 
 func (e *exporter) Describe(ch chan<- *prometheus.Desc) {
@@ -70,7 +71,7 @@ func (e *exporter) Collect(ch chan<- prometheus.Metric) {
 	e.m.Lock()
 	defer e.m.Unlock()
 
-	events := query(e.api)
+	events := query(e.api, e.filter)
 
 	for _, c := range counters {
 		c.Reset()
@@ -91,11 +92,9 @@ func (e *exporter) Collect(ch chan<- prometheus.Metric) {
 	}
 }
 
-func query(api healthiface.HealthAPI) (events []*health.Event) {
+func query(api healthiface.HealthAPI, filter *health.EventFilter) (events []*health.Event) {
 	err := api.DescribeEventsPages(&health.DescribeEventsInput{
-		Filter: &health.EventFilter{
-		// Regions: []*string{aws.String("eu-west-1")}, // todo: expose filters
-		},
+		Filter:     filter,
 		MaxResults: aws.Int64(10),
 	}, func(out *health.DescribeEventsOutput, lastPage bool) bool {
 		for _, e := range out.Events {
@@ -116,13 +115,18 @@ func init() {
 
 func main() {
 	var (
-		listenAddr  = flag.String("web.listen-address", ":9229", "The address to listen on for HTTP requests.")
-		showVersion = flag.Bool("version", false, "Print version information")
+		showVersion               = kingpin.Flag("version", "Print version information").Bool()
+		listenAddr                = kingpin.Flag("web.listen-address", "The address to listen on for HTTP requests.").Default(":9229").String()
+		filterAvailabilityZones   = kingpin.Flag("awshealth.filter-availability-zones", "A list of AWS services.").Strings()
+		filterEventTypeCategories = kingpin.Flag("awshealth.filter-event-type-categories", "A list of event type category codes (issue, scheduledChange, or accountNotification).").Strings()
+		filterEventTypeCodes      = kingpin.Flag("awshealth.filter-event-type-codes", "A list of unique identifiers for event types. For example, 'AWS_EC2_SYSTEM_MAINTENANCE_EVENT','AWS_RDS_MAINTENANCE_SCHEDULED'.").Strings()
+		filterRegions             = kingpin.Flag("awshealth.filter-regions", "A list of AWS regions.").Strings()
+		filterServices            = kingpin.Flag("awshealth.filter-services", "A list of AWS services.").Strings()
 	)
 
 	registerSignals()
 
-	flag.Parse()
+	kingpin.Parse()
 
 	if *showVersion {
 		fmt.Fprintln(os.Stdout, version.Print("aws_health_exporter"))
@@ -133,7 +137,25 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	exporter := &exporter{api: health.New(sess)}
+
+	filter := &health.EventFilter{}
+	if len(*filterAvailabilityZones) > 0 {
+		filter.AvailabilityZones = aws.StringSlice(*filterAvailabilityZones)
+	}
+	if len(*filterEventTypeCategories) > 0 {
+		filter.EventTypeCategories = aws.StringSlice(*filterEventTypeCategories)
+	}
+	if len(*filterEventTypeCodes) > 0 {
+		filter.EventTypeCodes = aws.StringSlice(*filterEventTypeCodes)
+	}
+	if len(*filterRegions) > 0 {
+		filter.Regions = aws.StringSlice(*filterRegions)
+	}
+	if len(*filterServices) > 0 {
+		filter.Services = aws.StringSlice(*filterServices)
+	}
+
+	exporter := &exporter{api: health.New(sess), filter: filter}
 	prometheus.MustRegister(exporter)
 
 	mux := http.NewServeMux()
