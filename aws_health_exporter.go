@@ -70,10 +70,31 @@ func (e *exporter) Collect(ch chan<- prometheus.Metric) {
 	e.m.Lock()
 	defer e.m.Unlock()
 
-	events := query(e.api, e.filter)
-
 	for _, c := range counters {
 		c.Reset()
+	}
+
+	e.scrape()
+
+	for _, c := range counters {
+		c.Collect(ch)
+	}
+}
+
+func (e *exporter) scrape() {
+	var events []*health.Event
+
+	err := e.api.DescribeEventsPages(&health.DescribeEventsInput{
+		Filter:     e.filter,
+		MaxResults: aws.Int64(10),
+	}, func(out *health.DescribeEventsOutput, lastPage bool) bool {
+		events = append(events, out.Events...)
+		return true
+	})
+
+	if err != nil {
+		log.Println(err)
+		return
 	}
 
 	for _, e := range events {
@@ -84,25 +105,6 @@ func (e *exporter) Collect(ch chan<- prometheus.Metric) {
 			aws.StringValue(e.Region),
 			aws.StringValue(e.Service)).Inc()
 	}
-
-	for _, c := range counters {
-		c.Collect(ch)
-	}
-}
-
-func query(api healthiface.HealthAPI, filter *health.EventFilter) (events []*health.Event) {
-	err := api.DescribeEventsPages(&health.DescribeEventsInput{
-		Filter:     filter,
-		MaxResults: aws.Int64(10),
-	}, func(out *health.DescribeEventsOutput, lastPage bool) bool {
-		events = append(events, out.Events...)
-		return true
-	})
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	return
 }
 
 func init() {
