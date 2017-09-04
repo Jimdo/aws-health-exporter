@@ -95,9 +95,7 @@ func query(api healthiface.HealthAPI, filter *health.EventFilter) (events []*hea
 		Filter:     filter,
 		MaxResults: aws.Int64(10),
 	}, func(out *health.DescribeEventsOutput, lastPage bool) bool {
-		for _, e := range out.Events {
-			events = append(events, e)
-		}
+		events = append(events, out.Events...)
 		return true
 	})
 	if err != nil {
