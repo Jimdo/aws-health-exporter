@@ -29,11 +29,10 @@ const (
 
 var (
 	labels = []string{
-		"AvailabilityZone",
-		"EventTypeCategory",
-		"EventTypeCode",
-		"Region",
-		"Service",
+		"availability_zone",
+		"event_type_category",
+		"region",
+		"service",
 	}
 
 	counters = map[string]*prometheus.CounterVec{
@@ -82,7 +81,6 @@ func (e *exporter) Collect(ch chan<- prometheus.Metric) {
 		c.WithLabelValues(
 			aws.StringValue(e.AvailabilityZone),
 			aws.StringValue(e.EventTypeCategory),
-			aws.StringValue(e.EventTypeCode),
 			aws.StringValue(e.Region),
 			aws.StringValue(e.Service)).Inc()
 	}
@@ -115,13 +113,12 @@ func init() {
 
 func main() {
 	var (
-		showVersion               = kingpin.Flag("version", "Print version information").Bool()
-		listenAddr                = kingpin.Flag("web.listen-address", "The address to listen on for HTTP requests.").Default(":9383").String()
-		filterAvailabilityZones   = kingpin.Flag("awshealth.filter-availability-zones", "A list of AWS services.").Strings()
-		filterEventTypeCategories = kingpin.Flag("awshealth.filter-event-type-categories", "A list of event type category codes (issue, scheduledChange, or accountNotification).").Strings()
-		filterEventTypeCodes      = kingpin.Flag("awshealth.filter-event-type-codes", "A list of unique identifiers for event types. For example, 'AWS_EC2_SYSTEM_MAINTENANCE_EVENT','AWS_RDS_MAINTENANCE_SCHEDULED'.").Strings()
-		filterRegions             = kingpin.Flag("awshealth.filter-regions", "A list of AWS regions.").Strings()
-		filterServices            = kingpin.Flag("awshealth.filter-services", "A list of AWS services.").Strings()
+		showVersion       = kingpin.Flag("version", "Print version information").Bool()
+		listenAddr        = kingpin.Flag("web.listen-address", "The address to listen on for HTTP requests.").Default(":9383").String()
+		availabilityZones = kingpin.Flag("aws.availability-zone", "A list of AWS availability zones.").Strings()
+		categories        = kingpin.Flag("aws.event-type-category", "A list of event type category codes (issue, scheduledChange, or accountNotification).").Strings()
+		regions           = kingpin.Flag("aws.region", "A list of AWS regions.").Strings()
+		services          = kingpin.Flag("aws.service", "A list of AWS services.").Strings()
 	)
 
 	registerSignals()
@@ -139,20 +136,17 @@ func main() {
 	}
 
 	filter := &health.EventFilter{}
-	if len(*filterAvailabilityZones) > 0 {
-		filter.AvailabilityZones = aws.StringSlice(*filterAvailabilityZones)
+	if len(*availabilityZones) > 0 {
+		filter.AvailabilityZones = aws.StringSlice(*availabilityZones)
 	}
-	if len(*filterEventTypeCategories) > 0 {
-		filter.EventTypeCategories = aws.StringSlice(*filterEventTypeCategories)
+	if len(*categories) > 0 {
+		filter.EventTypeCategories = aws.StringSlice(*categories)
 	}
-	if len(*filterEventTypeCodes) > 0 {
-		filter.EventTypeCodes = aws.StringSlice(*filterEventTypeCodes)
+	if len(*regions) > 0 {
+		filter.Regions = aws.StringSlice(*regions)
 	}
-	if len(*filterRegions) > 0 {
-		filter.Regions = aws.StringSlice(*filterRegions)
-	}
-	if len(*filterServices) > 0 {
-		filter.Services = aws.StringSlice(*filterServices)
+	if len(*services) > 0 {
+		filter.Services = aws.StringSlice(*services)
 	}
 
 	exporter := &exporter{api: health.New(sess), filter: filter}
