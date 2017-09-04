@@ -116,7 +116,7 @@ func init() {
 func main() {
 	var (
 		showVersion               = kingpin.Flag("version", "Print version information").Bool()
-		listenAddr                = kingpin.Flag("web.listen-address", "The address to listen on for HTTP requests.").Default(":9231").String()
+		listenAddr                = kingpin.Flag("web.listen-address", "The address to listen on for HTTP requests.").Default(":9383").String()
 		filterAvailabilityZones   = kingpin.Flag("awshealth.filter-availability-zones", "A list of AWS services.").Strings()
 		filterEventTypeCategories = kingpin.Flag("awshealth.filter-event-type-categories", "A list of event type category codes (issue, scheduledChange, or accountNotification).").Strings()
 		filterEventTypeCodes      = kingpin.Flag("awshealth.filter-event-type-codes", "A list of unique identifiers for event types. For example, 'AWS_EC2_SYSTEM_MAINTENANCE_EVENT','AWS_RDS_MAINTENANCE_SCHEDULED'.").Strings()
