@@ -2,6 +2,7 @@ package main
 
 import (
 	"reflect"
+	"sort"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -81,8 +82,11 @@ func validateMetric(t *testing.T, ch <-chan prometheus.Metric, e *health.Event, 
 	pb := &dto.Metric{}
 	m.Write(pb)
 
-	expectedLabels := getLabelsFromEvent(e)
 	labels := pb.GetLabel()
+	expectedLabels := getLabelsFromEvent(e)
+	sort.Sort(prometheus.LabelPairSorter(labels))
+	sort.Sort(prometheus.LabelPairSorter(expectedLabels))
+
 	if !reflect.DeepEqual(labels, expectedLabels) {
 		t.Errorf("Invalid labels - Expected: %v Got: %v", expectedLabels, labels)
 	}
