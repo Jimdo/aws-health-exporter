@@ -1,12 +1,13 @@
 package main
 
 import (
-	"log"
+	"reflect"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/health"
 	"github.com/aws/aws-sdk-go/service/health/healthiface"
+	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
 )
 
@@ -51,29 +52,68 @@ func TestScrape(t *testing.T) {
 			Service:           aws.String("LAMBDA"),
 			StatusCode:        aws.String("closed"),
 		},
+		&health.Event{
+			AvailabilityZone:  aws.String(""),
+			EventTypeCategory: aws.String("issue"),
+			Region:            aws.String("us-east-1"),
+			Service:           aws.String("LAMBDA"),
+			StatusCode:        aws.String("closed"),
+		},
 	}
 	e := &exporter{
 		api:    &mockHealthAPI{events: events},
 		filter: &health.EventFilter{},
 	}
+	ch := make(chan prometheus.Metric)
 
-	e.scrape()
+	go func() {
+		defer close(ch)
+		e.Collect(ch)
+	}()
 
-	if expect, got := 2., readCounter("", "issue", "us-east-1", "LAMBDA", "closed"); expect != got {
-		t.Errorf("Counter 'closed' has wrong value. Expected: %v Got: %v", expect, got)
+	validateMetric(t, ch, events[0], 1.)
+	validateMetric(t, ch, events[1], 1.)
+	validateMetric(t, ch, events[2], 3.)
+}
+
+func validateMetric(t *testing.T, ch <-chan prometheus.Metric, e *health.Event, expectedVal float64) {
+	m := <-ch
+	pb := &dto.Metric{}
+	m.Write(pb)
+
+	expectedLabels := getLabelsFromEvent(e)
+	labels := pb.GetLabel()
+	if !reflect.DeepEqual(labels, expectedLabels) {
+		t.Errorf("Invalid labels - Expected: %v Got: %v", expectedLabels, labels)
 	}
-	if expect, got := 1., readCounter("", "issue", "us-east-1", "EC2", "open"); expect != got {
-		t.Errorf("Counter 'open' has wrong value. Expected: %v Got: %v", expect, got)
+
+	val := pb.GetGauge().GetValue()
+	if pb.GetGauge().GetValue() != expectedVal {
+		t.Errorf("Invalid value - Expected: %v Got: %v", expectedVal, val)
 	}
 }
 
-func readCounter(availabilityZone, eventTypeCategory, region, service, statusCode string) float64 {
-	vec, ok := counters[statusCode]
-	if !ok {
-		log.Fatalf("no CounterVec for status code %v", statusCode)
+func getLabelsFromEvent(e *health.Event) []*dto.LabelPair {
+	return []*dto.LabelPair{
+		&dto.LabelPair{
+			Name:  aws.String(LabelAvailabilityZone),
+			Value: e.AvailabilityZone,
+		},
+		&dto.LabelPair{
+			Name:  aws.String(LabelEventTypeCategory),
+			Value: e.EventTypeCategory,
+		},
+		&dto.LabelPair{
+			Name:  aws.String(LabelRegion),
+			Value: e.Region,
+		},
+		&dto.LabelPair{
+			Name:  aws.String(LabelService),
+			Value: e.Service,
+		},
+		&dto.LabelPair{
+			Name:  aws.String(LabelStatusCode),
+			Value: e.StatusCode,
+		},
 	}
-	m := vec.WithLabelValues(availabilityZone, eventTypeCategory, region, service)
-	pb := &dto.Metric{}
-	m.Write(pb)
-	return pb.GetCounter().GetValue()
 }

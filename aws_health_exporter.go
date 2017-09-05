@@ -35,30 +35,20 @@ const (
 	LabelRegion = "region"
 	// LabelService defines the service of the event, e.g. EC2, RDS
 	LabelService = "service"
+	// LabelStatusCode defines the status of the event, e.g. open, upcoming, closed
+	LabelStatusCode = "status_code"
 )
 
 var (
 	// labels are the static labels that come with every metric
-	labels = []string{LabelAvailabilityZone, LabelEventTypeCategory, LabelRegion, LabelService}
+	labels = []string{LabelAvailabilityZone, LabelEventTypeCategory, LabelRegion, LabelService, LabelStatusCode}
 
-	// Counters mapped to the corresponding aws event StatusCode
-	counters = map[string]*prometheus.CounterVec{
-		"closed": prometheus.NewCounterVec(prometheus.CounterOpts{
-			Namespace: namespace,
-			Name:      "closed_events_total",
-			Help:      "Counter for closed events",
-		}, labels),
-		"open": prometheus.NewCounterVec(prometheus.CounterOpts{
-			Namespace: namespace,
-			Name:      "open_events_total",
-			Help:      "Counter for open events",
-		}, labels),
-		"upcoming": prometheus.NewCounterVec(prometheus.CounterOpts{
-			Namespace: namespace,
-			Name:      "upcoming_events_total",
-			Help:      "Counter for upcoming events",
-		}, labels),
-	}
+	// eventCount is the total number of events reported
+	eventCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Namespace: namespace,
+		Name:      "event_count",
+		Help:      "Gauge for aws health events",
+	}, labels)
 )
 
 type exporter struct {
@@ -68,27 +58,19 @@ type exporter struct {
 }
 
 func (e *exporter) Describe(ch chan<- *prometheus.Desc) {
-	for _, c := range counters {
-		c.Describe(ch)
-	}
+	eventCount.Describe(ch)
 }
 
 func (e *exporter) Collect(ch chan<- prometheus.Metric) {
 	e.m.Lock()
 	defer e.m.Unlock()
 
-	for _, c := range counters {
-		c.Reset()
-	}
-
-	e.scrape()
-
-	for _, c := range counters {
-		c.Collect(ch)
-	}
+	eventCount.Reset()
+	e.scrape(ch)
+	eventCount.Collect(ch)
 }
 
-func (e *exporter) scrape() {
+func (e *exporter) scrape(ch chan<- prometheus.Metric) {
 	var events []*health.Event
 
 	err := e.api.DescribeEventsPages(&health.DescribeEventsInput{
@@ -104,15 +86,12 @@ func (e *exporter) scrape() {
 	}
 
 	for _, e := range events {
-		if c, ok := counters[*e.StatusCode]; ok {
-			c.WithLabelValues(
-				aws.StringValue(e.AvailabilityZone),
-				aws.StringValue(e.EventTypeCategory),
-				aws.StringValue(e.Region),
-				aws.StringValue(e.Service)).Inc()
-		} else {
-			log.Printf("Unhandled status code: %v\n", e.StatusCode)
-		}
+		eventCount.WithLabelValues(
+			aws.StringValue(e.AvailabilityZone),
+			aws.StringValue(e.EventTypeCategory),
+			aws.StringValue(e.Region),
+			aws.StringValue(e.Service),
+			aws.StringValue(e.StatusCode)).Inc()
 	}
 }
 
