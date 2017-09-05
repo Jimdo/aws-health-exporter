@@ -20,10 +20,11 @@ import (
 )
 
 const (
-	// APIRegion is the region where the AWS health api lives. Currently this only `us-east-1`.
+	// APIRegion is the region where the AWS health api lives. Currently
+	// this is only `us-east-1`, see: http://docs.aws.amazon.com/health/latest/ug/getting-started-api.html
 	APIRegion = "us-east-1"
 
-	// Namespace..
+	// namespace is the metrics prefix
 	namespace = "aws_health"
 )
 
@@ -35,21 +36,22 @@ var (
 		"service",
 	}
 
+	// Counters mapped to the corresponding aws event StatusCode
 	counters = map[string]*prometheus.CounterVec{
+		"closed": prometheus.NewCounterVec(prometheus.CounterOpts{
+			Namespace: namespace,
+			Name:      "closed_events_total",
+			Help:      "Counter for closed events",
+		}, labels),
 		"open": prometheus.NewCounterVec(prometheus.CounterOpts{
 			Namespace: namespace,
-			Name:      "open",
+			Name:      "open_events_total",
 			Help:      "Counter for open events",
 		}, labels),
 		"upcoming": prometheus.NewCounterVec(prometheus.CounterOpts{
 			Namespace: namespace,
-			Name:      "upcoming",
+			Name:      "upcoming_events_total",
 			Help:      "Counter for upcoming events",
-		}, labels),
-		"closed": prometheus.NewCounterVec(prometheus.CounterOpts{
-			Namespace: namespace,
-			Name:      "closed",
-			Help:      "Counter for closed events",
 		}, labels),
 	}
 )
@@ -98,12 +100,15 @@ func (e *exporter) scrape() {
 	}
 
 	for _, e := range events {
-		c := counters[*e.StatusCode]
-		c.WithLabelValues(
-			aws.StringValue(e.AvailabilityZone),
-			aws.StringValue(e.EventTypeCategory),
-			aws.StringValue(e.Region),
-			aws.StringValue(e.Service)).Inc()
+		if c, ok := counters[*e.StatusCode]; ok {
+			c.WithLabelValues(
+				aws.StringValue(e.AvailabilityZone),
+				aws.StringValue(e.EventTypeCategory),
+				aws.StringValue(e.Region),
+				aws.StringValue(e.Service)).Inc()
+		} else {
+			log.Printf("Unhandled status code: %v\n", e.StatusCode)
+		}
 	}
 }
 
