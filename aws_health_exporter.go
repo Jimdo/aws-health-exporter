@@ -26,15 +26,19 @@ const (
 
 	// namespace is the metrics prefix
 	namespace = "aws_health"
+
+	// LabelAvailabilityZone defines the availability zone of the event, e.g. us-east-1a
+	LabelAvailabilityZone = "availability_zone"
+	// LabelEventTypeCategory defines the event type category of the event, e.g. issue, accountNotification, scheduledChange
+	LabelEventTypeCategory = "event_type_category"
+	// LabelRegion defines the region of the event, e.g. us-east-1
+	LabelRegion = "region"
+	// LabelService defines the service of the event, e.g. EC2, RDS
+	LabelService = "service"
 )
 
 var (
-	labels = []string{
-		"availability_zone",
-		"event_type_category",
-		"region",
-		"service",
-	}
+	labels = []string{LabelAvailabilityZone, LabelEventTypeCategory, LabelRegion, LabelService}
 
 	// Counters mapped to the corresponding aws event StatusCode
 	counters = map[string]*prometheus.CounterVec{
