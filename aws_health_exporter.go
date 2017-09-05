@@ -38,6 +38,7 @@ const (
 )
 
 var (
+	// labels are the static labels that come with every metric
 	labels = []string{LabelAvailabilityZone, LabelEventTypeCategory, LabelRegion, LabelService}
 
 	// Counters mapped to the corresponding aws event StatusCode
