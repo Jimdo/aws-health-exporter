@@ -103,9 +103,9 @@ func main() {
 	var (
 		showVersion = kingpin.Flag("version", "Print version information").Bool()
 		listenAddr  = kingpin.Flag("web.listen-address", "The address to listen on for HTTP requests.").Default(":9383").String()
-		categories  = kingpin.Flag("aws.event-type-category", "A list of event type category codes (issue, scheduledChange, or accountNotification).").Strings()
-		regions     = kingpin.Flag("aws.region", "A list of AWS regions.").Strings()
-		services    = kingpin.Flag("aws.service", "A list of AWS services.").Strings()
+		categories  = kingpin.Flag("aws.event-type-category", "A list of event type category codes (issue, scheduledChange, or accountNotification) that are used to filter events.").Strings()
+		regions     = kingpin.Flag("aws.region", "A list of AWS regions that are used to filter events").Strings()
+		services    = kingpin.Flag("aws.service", "A list of AWS services that are used to filter events").Strings()
 	)
 
 	registerSignals()
