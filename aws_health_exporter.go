@@ -26,8 +26,8 @@ const (
 	// this is only `us-east-1`, see: http://docs.aws.amazon.com/health/latest/ug/getting-started-api.html
 	APIRegion = "us-east-1"
 
-	// LabelEventTypeCategory defines the event type category of the event, e.g. issue, accountNotification, scheduledChange
-	LabelEventTypeCategory = "event_type_category"
+	// LabelCategory defines the event type category of the event, e.g. issue, accountNotification, scheduledChange
+	LabelCategory = "category"
 	// LabelRegion defines the region of the event, e.g. us-east-1
 	LabelRegion = "region"
 	// LabelService defines the service of the event, e.g. EC2, RDS
@@ -45,7 +45,7 @@ var (
 	Version = "N/A"
 
 	// labels are the static labels that come with every metric
-	labels = []string{LabelEventTypeCategory, LabelRegion, LabelService, LabelStatusCode}
+	labels = []string{LabelCategory, LabelRegion, LabelService, LabelStatusCode}
 
 	// eventCount is the total number of events reported
 	eventCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
@@ -106,7 +106,7 @@ func main() {
 	var (
 		showVersion = kingpin.Flag("version", "Print version information").Bool()
 		listenAddr  = kingpin.Flag("web.listen-address", "The address to listen on for HTTP requests.").Default(":9383").String()
-		categories  = kingpin.Flag("aws.event-type-category", "A list of event type category codes (issue, scheduledChange, or accountNotification) that are used to filter events.").Strings()
+		categories  = kingpin.Flag("aws.category", "A list of event type category codes (issue, scheduledChange, or accountNotification) that are used to filter events.").Strings()
 		regions     = kingpin.Flag("aws.region", "A list of AWS regions that are used to filter events").Strings()
 		services    = kingpin.Flag("aws.service", "A list of AWS services that are used to filter events").Strings()
 	)

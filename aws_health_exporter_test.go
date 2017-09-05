@@ -95,7 +95,7 @@ func validateMetric(t *testing.T, ch <-chan prometheus.Metric, e *health.Event, 
 func getLabelsFromEvent(e *health.Event) []*dto.LabelPair {
 	return []*dto.LabelPair{
 		&dto.LabelPair{
-			Name:  aws.String(LabelEventTypeCategory),
+			Name:  aws.String(LabelCategory),
 			Value: e.EventTypeCategory,
 		},
 		&dto.LabelPair{
