@@ -6,8 +6,10 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime"
 	"sync"
 	"syscall"
+	"text/tabwriter"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -24,9 +26,6 @@ const (
 	// this is only `us-east-1`, see: http://docs.aws.amazon.com/health/latest/ug/getting-started-api.html
 	APIRegion = "us-east-1"
 
-	// namespace is the metrics prefix
-	namespace = "aws_health"
-
 	// LabelAvailabilityZone defines the availability zone of the event, e.g. us-east-1a
 	LabelAvailabilityZone = "availability_zone"
 	// LabelEventTypeCategory defines the event type category of the event, e.g. issue, accountNotification, scheduledChange
@@ -37,15 +36,22 @@ const (
 	LabelService = "service"
 	// LabelStatusCode defines the status of the event, e.g. open, upcoming, closed
 	LabelStatusCode = "status_code"
+	// Namespace is the metrics prefix
+	Namespace = "aws_health"
 )
 
 var (
+	// BuildTime represents the time of the build
+	BuildTime = "N/A"
+	// Version represents the Build SHA-1 of the binary
+	Version = "N/A"
+
 	// labels are the static labels that come with every metric
 	labels = []string{LabelAvailabilityZone, LabelEventTypeCategory, LabelRegion, LabelService, LabelStatusCode}
 
 	// eventCount is the total number of events reported
 	eventCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Namespace: namespace,
+		Namespace: Namespace,
 		Name:      "event_count",
 		Help:      "Gauge for aws health events",
 	}, labels)
@@ -113,9 +119,15 @@ func main() {
 	kingpin.Parse()
 
 	if *showVersion {
-		fmt.Fprintln(os.Stdout, version.Print("aws_health_exporter"))
+		tw := tabwriter.NewWriter(os.Stdout, 2, 1, 2, ' ', 0)
+		fmt.Fprintf(tw, "Build Time:   %s\n", BuildTime)
+		fmt.Fprintf(tw, "Build SHA-1:  %s\n", Version)
+		fmt.Fprintf(tw, "Go Version:   %s\n", runtime.Version())
+		tw.Flush()
 		os.Exit(0)
 	}
+
+	log.Printf("Starting `aws-health-exporter`: Build Time: '%s' Build SHA-1: '%s'\n", BuildTime, Version)
 
 	sess, err := session.NewSession(&aws.Config{Region: aws.String(APIRegion)})
 	if err != nil {

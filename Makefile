@@ -1,25 +1,32 @@
-pkgs   = $(shell go list ./... | grep -v /vendor/)
-
-DOCKER_IMAGE_NAME       ?= aws-health-exporter
-DOCKER_IMAGE_TAG        ?= $(subst /,-,$(shell git rev-parse --abbrev-ref HEAD))
+DATE 		= $(shell date -u '+%Y-%m-%d-%H%M UTC')
+IMAGE 		?= aws-health-exporter
+VERSION 	= $(shell git describe --always --tags --dirty)
+GO_PACKAGES = $(shell go list ./... | grep -v /vendor/)
 
 all: format build test
 
 test:
 	@echo ">> running tests"
-	@go test $(pkgs)
+	@go test $(GO_PACKAGES)
 
 format:
 	@echo ">> formatting code"
-	@go fmt $(pkgs)
+	@go fmt $(GO_PACKAGES)
 
-build: 
+build:
 	@echo ">> building binaries"
 	@go build
 
 docker:
 	@echo ">> building docker image"
-	@docker build -t "$(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG)" .
-	@docker tag $(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_TAG) $(DOCKER_IMAGE_NAME):latest
+	@docker build \
+		--build-arg VERSION="$(VERSION)" \
+		--build-arg DATE="$(DATE)" \
+		-t $(IMAGE):$(VERSION) \
+		.
+	docker tag $(IMAGE):$(VERSION) $(IMAGE):latest
 
-.PHONY: all format build test docker 
+version:
+	echo $(DOCKER_IMAGE_TAG)
+
+.PHONY: all format build test docker
