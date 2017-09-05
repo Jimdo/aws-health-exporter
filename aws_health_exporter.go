@@ -101,12 +101,11 @@ func init() {
 
 func main() {
 	var (
-		showVersion       = kingpin.Flag("version", "Print version information").Bool()
-		listenAddr        = kingpin.Flag("web.listen-address", "The address to listen on for HTTP requests.").Default(":9383").String()
-		availabilityZones = kingpin.Flag("aws.availability-zone", "A list of AWS availability zones.").Strings()
-		categories        = kingpin.Flag("aws.event-type-category", "A list of event type category codes (issue, scheduledChange, or accountNotification).").Strings()
-		regions           = kingpin.Flag("aws.region", "A list of AWS regions.").Strings()
-		services          = kingpin.Flag("aws.service", "A list of AWS services.").Strings()
+		showVersion = kingpin.Flag("version", "Print version information").Bool()
+		listenAddr  = kingpin.Flag("web.listen-address", "The address to listen on for HTTP requests.").Default(":9383").String()
+		categories  = kingpin.Flag("aws.event-type-category", "A list of event type category codes (issue, scheduledChange, or accountNotification).").Strings()
+		regions     = kingpin.Flag("aws.region", "A list of AWS regions.").Strings()
+		services    = kingpin.Flag("aws.service", "A list of AWS services.").Strings()
 	)
 
 	registerSignals()
@@ -124,9 +123,6 @@ func main() {
 	}
 
 	filter := &health.EventFilter{}
-	if len(*availabilityZones) > 0 {
-		filter.AvailabilityZones = aws.StringSlice(*availabilityZones)
-	}
 	if len(*categories) > 0 {
 		filter.EventTypeCategories = aws.StringSlice(*categories)
 	}
