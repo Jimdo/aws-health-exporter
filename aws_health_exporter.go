@@ -26,8 +26,6 @@ const (
 	// this is only `us-east-1`, see: http://docs.aws.amazon.com/health/latest/ug/getting-started-api.html
 	APIRegion = "us-east-1"
 
-	// LabelAvailabilityZone defines the availability zone of the event, e.g. us-east-1a
-	LabelAvailabilityZone = "availability_zone"
 	// LabelEventTypeCategory defines the event type category of the event, e.g. issue, accountNotification, scheduledChange
 	LabelEventTypeCategory = "event_type_category"
 	// LabelRegion defines the region of the event, e.g. us-east-1
@@ -47,7 +45,7 @@ var (
 	Version = "N/A"
 
 	// labels are the static labels that come with every metric
-	labels = []string{LabelAvailabilityZone, LabelEventTypeCategory, LabelRegion, LabelService, LabelStatusCode}
+	labels = []string{LabelEventTypeCategory, LabelRegion, LabelService, LabelStatusCode}
 
 	// eventCount is the total number of events reported
 	eventCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
@@ -93,7 +91,6 @@ func (e *exporter) scrape(ch chan<- prometheus.Metric) {
 
 	for _, e := range events {
 		eventCount.WithLabelValues(
-			aws.StringValue(e.AvailabilityZone),
 			aws.StringValue(e.EventTypeCategory),
 			aws.StringValue(e.Region),
 			aws.StringValue(e.Service),

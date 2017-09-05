@@ -26,35 +26,30 @@ func (api *mockHealthAPI) DescribeEventsPages(in *health.DescribeEventsInput, fn
 func TestScrape(t *testing.T) {
 	var events = []*health.Event{
 		&health.Event{
-			AvailabilityZone:  aws.String(""),
 			EventTypeCategory: aws.String("issue"),
 			Region:            aws.String("eu-west-1"),
 			Service:           aws.String("EC2"),
 			StatusCode:        aws.String("open"),
 		},
 		&health.Event{
-			AvailabilityZone:  aws.String(""),
 			EventTypeCategory: aws.String("issue"),
 			Region:            aws.String("us-east-1"),
 			Service:           aws.String("EC2"),
 			StatusCode:        aws.String("open"),
 		},
 		&health.Event{
-			AvailabilityZone:  aws.String(""),
 			EventTypeCategory: aws.String("issue"),
 			Region:            aws.String("us-east-1"),
 			Service:           aws.String("LAMBDA"),
 			StatusCode:        aws.String("closed"),
 		},
 		&health.Event{
-			AvailabilityZone:  aws.String(""),
 			EventTypeCategory: aws.String("issue"),
 			Region:            aws.String("us-east-1"),
 			Service:           aws.String("LAMBDA"),
 			StatusCode:        aws.String("closed"),
 		},
 		&health.Event{
-			AvailabilityZone:  aws.String(""),
 			EventTypeCategory: aws.String("issue"),
 			Region:            aws.String("us-east-1"),
 			Service:           aws.String("LAMBDA"),
@@ -99,10 +94,6 @@ func validateMetric(t *testing.T, ch <-chan prometheus.Metric, e *health.Event, 
 
 func getLabelsFromEvent(e *health.Event) []*dto.LabelPair {
 	return []*dto.LabelPair{
-		&dto.LabelPair{
-			Name:  aws.String(LabelAvailabilityZone),
-			Value: e.AvailabilityZone,
-		},
 		&dto.LabelPair{
 			Name:  aws.String(LabelEventTypeCategory),
 			Value: e.EventTypeCategory,
