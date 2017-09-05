@@ -91,8 +91,7 @@ func (e *exporter) scrape() {
 	var events []*health.Event
 
 	err := e.api.DescribeEventsPages(&health.DescribeEventsInput{
-		Filter:     e.filter,
-		MaxResults: aws.Int64(10),
+		Filter: e.filter,
 	}, func(out *health.DescribeEventsOutput, lastPage bool) bool {
 		events = append(events, out.Events...)
 		return true
