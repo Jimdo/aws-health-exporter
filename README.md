@@ -1,6 +1,8 @@
 # AWS Health Exporter [![Build Status](https://travis-ci.com/Jimdo/aws-health-exporter.svg?token=1djnvUyMgtcVefCz54T4&branch=master)](https://travis-ci.com/Jimdo/aws-health-exporter)
 
-This is a simple server that scrapes the [AWS Status](https://status.aws.amazon.com/) (via the [AWS Health API](https://status.aws.amazon.com/)) and exports it via HTTP for Prometheus consumption.
+This is a simple server that scrapes the [AWS Status](https://status.aws.amazon.com/) (via the [AWS Health API](https://status.aws.amazon.com/)) and exports it via HTTP for Prometheus consumption. That allows you to alert on certain AWS status updates or to just make them visible on your dashboards.
+
+_Note that in order to scrape the AWS Health API your AWS account has to have a Business or Enterprise support plan. See the [official documentation](http://docs.aws.amazon.com/health/latest/ug/what-is-aws-health.html) for details._
 
 ### Build
 ```
@@ -56,6 +58,4 @@ docker run -p 9383:9383 jimdo/aws-health-exporter
 
 ### Credentials
 The `aws-health-exporter` requires AWS credentials to access the AWS Health API. For example you can pass them via env vars using `-e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}` options.
-
-_Note that in order to scrape the AWS Health API your AWS account has to have a Business or Enterprise support plan. See the [official documentation](http://docs.aws.amazon.com/health/latest/ug/what-is-aws-health.html) for details._
 
