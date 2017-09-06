@@ -1,8 +1,6 @@
 package main
 
 import (
-	"reflect"
-	"sort"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -60,55 +58,21 @@ func TestScrape(t *testing.T) {
 		api:    &mockHealthAPI{events: events},
 		filter: &health.EventFilter{},
 	}
-	ch := make(chan prometheus.Metric)
 
-	go func() {
-		defer close(ch)
-		e.Collect(ch)
-	}()
+	e.scrape()
 
-	validateMetric(t, ch, events[0], 1.)
-	validateMetric(t, ch, events[1], 1.)
-	validateMetric(t, ch, events[2], 3.)
+	validateMetric(t, eventCount, events[0], 1.)
+	validateMetric(t, eventCount, events[1], 1.)
+	validateMetric(t, eventCount, events[2], 3.)
 }
 
-func validateMetric(t *testing.T, ch <-chan prometheus.Metric, e *health.Event, expectedVal float64) {
-	m := <-ch
+func validateMetric(t *testing.T, vec *prometheus.GaugeVec, e *health.Event, expectedVal float64) {
+	m := vec.WithLabelValues(*e.EventTypeCategory, *e.Region, *e.Service, *e.StatusCode)
 	pb := &dto.Metric{}
 	m.Write(pb)
-
-	labels := pb.GetLabel()
-	expectedLabels := getLabelsFromEvent(e)
-	sort.Sort(prometheus.LabelPairSorter(labels))
-	sort.Sort(prometheus.LabelPairSorter(expectedLabels))
-
-	if !reflect.DeepEqual(labels, expectedLabels) {
-		t.Errorf("Invalid labels - Expected: %v Got: %v", expectedLabels, labels)
-	}
 
 	val := pb.GetGauge().GetValue()
 	if pb.GetGauge().GetValue() != expectedVal {
 		t.Errorf("Invalid value - Expected: %v Got: %v", expectedVal, val)
-	}
-}
-
-func getLabelsFromEvent(e *health.Event) []*dto.LabelPair {
-	return []*dto.LabelPair{
-		&dto.LabelPair{
-			Name:  aws.String(LabelCategory),
-			Value: e.EventTypeCategory,
-		},
-		&dto.LabelPair{
-			Name:  aws.String(LabelRegion),
-			Value: e.Region,
-		},
-		&dto.LabelPair{
-			Name:  aws.String(LabelService),
-			Value: e.Service,
-		},
-		&dto.LabelPair{
-			Name:  aws.String(LabelStatusCode),
-			Value: e.StatusCode,
-		},
 	}
 }
