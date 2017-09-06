@@ -70,11 +70,11 @@ func (e *exporter) Collect(ch chan<- prometheus.Metric) {
 	defer e.m.Unlock()
 
 	eventCount.Reset()
-	e.scrape(ch)
+	e.scrape()
 	eventCount.Collect(ch)
 }
 
-func (e *exporter) scrape(ch chan<- prometheus.Metric) {
+func (e *exporter) scrape() {
 	var events []*health.Event
 
 	err := e.api.DescribeEventsPages(&health.DescribeEventsInput{
