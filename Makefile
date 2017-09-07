@@ -1,4 +1,3 @@
-DATE 		= $(shell date -u '+%Y-%m-%d-%H%M UTC')
 IMAGE 		?= aws-health-exporter
 VERSION 	= $(shell git describe --always --tags --dirty)
 GO_PACKAGES = $(shell go list ./... | grep -v /vendor/)
@@ -20,8 +19,7 @@ build:
 docker:
 	@echo ">> building docker image"
 	@docker build \
-		--build-arg VERSION="$(VERSION)" \
-		--build-arg DATE="$(DATE)" \
+		--build-arg SOURCE_COMMIT="$(VERSION)" \
 		-t $(IMAGE):$(VERSION) \
 		.
 	docker tag $(IMAGE):$(VERSION) $(IMAGE):latest

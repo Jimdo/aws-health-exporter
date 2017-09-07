@@ -1,12 +1,12 @@
 FROM golang:alpine
 
-ARG VERSION
-ARG DATE
+ARG SOURCE_COMMIT
 
 ADD . /go/src/github.com/Jimdo/aws-health-exporter
 WORKDIR /go/src/github.com/Jimdo/aws-health-exporter
 
-RUN go install -ldflags="-X 'main.Version=${VERSION}' -X 'main.BuildTime=${DATE}'" ./...
+RUN DATE=$(date -u '+%Y-%m-%d-%H%M UTC'); \
+    go install -ldflags="-X 'main.Version=${SOURCE_COMMIT}' -X 'main.BuildTime=${DATE}'" ./...
 
 ENTRYPOINT  [ "/go/bin/aws-health-exporter" ]
 EXPOSE      9383
