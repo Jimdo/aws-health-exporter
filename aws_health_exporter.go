@@ -46,9 +46,9 @@ var (
 	// labels are the static labels that come with every metric
 	labels = []string{LabelCategory, LabelRegion, LabelService, LabelStatusCode}
 
-	// event_count is the number of aws health events reported
+	// events is the number of aws health events reported
 	eventOpts = prometheus.GaugeOpts{
-		Name:      "event_count",
+		Name:      "events",
 		Namespace: Namespace,
 		Help:      "Gauge for aws health events",
 	}
