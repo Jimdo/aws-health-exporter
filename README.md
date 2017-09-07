@@ -20,12 +20,12 @@ The `aws-health-exporter` exports just one metric (event count) and you want to 
 Example
 ```
 # This gives us a list of all `open` events in region `us-east-1` of type `issue`
-aws_health_event_count{status_code="open", region="us-east-1", category="issue"}
+aws_health_events{status_code="open", region="us-east-1", category="issue"}
 ```
 
 Name | Description | Labels
 -----|-----|-----
-aws_health_event_count | AWS Health event counter | category, region, service, status_code
+aws_health_events | AWS Health events | category, region, service, status_code
 
 ### Labels Explained
 Label | Description

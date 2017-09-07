@@ -59,11 +59,12 @@ func TestScrape(t *testing.T) {
 		filter: &health.EventFilter{},
 	}
 
-	e.scrape()
+	gv := prometheus.NewGaugeVec(eventOpts, labels)
+	e.scrape(gv)
 
-	validateMetric(t, eventCount, events[0], 1.)
-	validateMetric(t, eventCount, events[1], 1.)
-	validateMetric(t, eventCount, events[2], 3.)
+	validateMetric(t, gv, events[0], 1.)
+	validateMetric(t, gv, events[1], 1.)
+	validateMetric(t, gv, events[2], 3.)
 }
 
 func validateMetric(t *testing.T, vec *prometheus.GaugeVec, e *health.Event, expectedVal float64) {
