@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
-	"sync"
 	"syscall"
 	"text/tabwriter"
 
@@ -47,34 +46,35 @@ var (
 	// labels are the static labels that come with every metric
 	labels = []string{LabelCategory, LabelRegion, LabelService, LabelStatusCode}
 
-	// eventCount is the total number of events reported
-	eventCount = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Namespace: Namespace,
+	// event_count is the number of aws health events reported
+	eventOpts = prometheus.GaugeOpts{
 		Name:      "event_count",
+		Namespace: Namespace,
 		Help:      "Gauge for aws health events",
-	}, labels)
+	}
 )
 
 type exporter struct {
 	api    healthiface.HealthAPI
 	filter *health.EventFilter
-	m      sync.Mutex
 }
 
 func (e *exporter) Describe(ch chan<- *prometheus.Desc) {
-	eventCount.Describe(ch)
+	ch <- prometheus.NewDesc(
+		prometheus.BuildFQName(eventOpts.Namespace, eventOpts.Subsystem, eventOpts.Name),
+		eventOpts.Help,
+		labels,
+		nil,
+	)
 }
 
 func (e *exporter) Collect(ch chan<- prometheus.Metric) {
-	e.m.Lock()
-	defer e.m.Unlock()
-
-	eventCount.Reset()
-	e.scrape()
-	eventCount.Collect(ch)
+	gv := prometheus.NewGaugeVec(eventOpts, labels)
+	e.scrape(gv)
+	gv.Collect(ch)
 }
 
-func (e *exporter) scrape() {
+func (e *exporter) scrape(gv *prometheus.GaugeVec) {
 	var events []*health.Event
 
 	err := e.api.DescribeEventsPages(&health.DescribeEventsInput{
@@ -90,7 +90,7 @@ func (e *exporter) scrape() {
 	}
 
 	for _, e := range events {
-		eventCount.WithLabelValues(
+		gv.WithLabelValues(
 			aws.StringValue(e.EventTypeCategory),
 			aws.StringValue(e.Region),
 			aws.StringValue(e.Service),
