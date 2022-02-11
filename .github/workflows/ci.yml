@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+  schedule:
+  - cron: '15 0 * * 5'
+
+jobs:
+  build:
+    permissions:
+      id-token: write
+      contents: read
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Get credentials
+      uses: hashicorp/vault-action@v2.4.0
+      with:
+        url: https://vault.jimdo-platform.net
+        method: jwt
+        role: wonderland_travis_migration
+        secrets: |
+          secret/wonderland/travis-config/dockerhub DOCKER_USER ;
+          secret/wonderland/travis-config/dockerhub DOCKER_PASSWORD ;
+
+    - name: Login to DockerHub registry
+      uses: docker/login-action@v1
+      with:
+        registry: docker.io
+        username: ${{ env.DOCKER_USER }}
+        password: ${{ env.DOCKER_PASSWORD }}
+
+    - uses: actions/checkout@v2
+    
+    - uses: actions/setup-go@v2
+      with:
+        go-version: '1.17'
+    
+    - name: Make all
+      run: make
