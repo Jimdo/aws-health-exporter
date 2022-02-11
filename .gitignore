@@ -24,3 +24,5 @@ _testmain.go
 *.prof
 
 aws-health-exporter
+
+.idea
