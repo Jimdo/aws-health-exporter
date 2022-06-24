@@ -15,15 +15,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Get credentials
-      uses: hashicorp/vault-action@v2.4.0
+    - name: Get Dockerhub credentials
+      uses: hashicorp/vault-action@v2.4.1
       with:
         url: https://vault.jimdo-platform.net
         method: jwt
-        role: wonderland_travis_migration
         secrets: |
-          secret/wonderland/travis-config/dockerhub DOCKER_USER ;
-          secret/wonderland/travis-config/dockerhub DOCKER_PASSWORD ;
+          secret/github/dockerhub DOCKER_USER ;
+          secret/github/dockerhub DOCKER_PASSWORD ;
 
     - name: Login to DockerHub registry
       uses: docker/login-action@v1
@@ -33,10 +32,10 @@ jobs:
         password: ${{ env.DOCKER_PASSWORD }}
 
     - uses: actions/checkout@v2
-    
+
     - uses: actions/setup-go@v2
       with:
         go-version: '1.17'
-    
+
     - name: Make all
       run: make
