@@ -7,11 +7,10 @@ require (
 	github.com/prometheus/client_golang v0.9.0-pre1
 	github.com/prometheus/client_model v0.0.0-20170216185247-6f3806018612
 	github.com/prometheus/common v0.0.0-20170830190555-bc8b88226a12
-	gopkg.in/alecthomas/kingpin.v2 v2.2.5
+	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 )
 
 require (
-	github.com/alecthomas/assert v1.0.0 // indirect
 	github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc // indirect
 	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
 	github.com/beorn7/perks v0.0.0-20160804104726-4c0e84591b9a // indirect
