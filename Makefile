@@ -1,16 +1,15 @@
 IMAGE 		?= aws-health-exporter
 VERSION 	= $(shell git describe --always --tags --dirty)
-GO_PACKAGES = $(shell go list ./... | grep -v /vendor/)
 
 all: format build test
 
 test:
 	@echo ">> running tests"
-	@go test $(GO_PACKAGES)
+	@go test -v ./...
 
 format:
 	@echo ">> formatting code"
-	@go fmt $(GO_PACKAGES)
+	@go fmt ./...
 
 build:
 	@echo ">> building binaries"
