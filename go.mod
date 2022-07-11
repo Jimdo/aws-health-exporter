@@ -3,7 +3,7 @@ module github.com/Jimdo/aws-health-exporter
 go 1.17
 
 require (
-	github.com/aws/aws-sdk-go v1.44.41
+	github.com/aws/aws-sdk-go v1.44.52
 	github.com/prometheus/client_golang v0.9.0-pre1
 	github.com/prometheus/client_model v0.0.0-20170216185247-6f3806018612
 	github.com/prometheus/common v0.0.0-20170830190555-bc8b88226a12
