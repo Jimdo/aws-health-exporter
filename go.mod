@@ -3,7 +3,7 @@ module github.com/Jimdo/aws-health-exporter
 go 1.17
 
 require (
-	github.com/aws/aws-sdk-go v1.44.96
+	github.com/aws/aws-sdk-go v1.44.131
 	github.com/prometheus/client_golang v0.9.0-pre1
 	github.com/prometheus/client_model v0.0.0-20170216185247-6f3806018612
 	github.com/prometheus/common v0.0.0-20170830190555-bc8b88226a12
@@ -20,5 +20,4 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/prometheus/procfs v0.0.0-20170703101242-e645f4e5aaa8 // indirect
 	github.com/stretchr/testify v1.7.0 // indirect
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 )
