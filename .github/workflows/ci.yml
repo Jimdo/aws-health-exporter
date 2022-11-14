@@ -16,7 +16,7 @@ jobs:
 
     steps:
     - name: Get Dockerhub credentials
-      uses: hashicorp/vault-action@v2.4.2
+      uses: hashicorp/vault-action@v2.4.3
       with:
         url: https://vault.jimdo-platform.net
         method: jwt
