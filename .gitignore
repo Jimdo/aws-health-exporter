@@ -1,3 +1,7 @@
+#env variables
+
+.env
+
 # Compiled Object files, Static and Dynamic libs (Shared Objects)
 *.o
 *.a
@@ -26,5 +30,3 @@ _testmain.go
 aws-health-exporter
 
 .idea
-
-.env
