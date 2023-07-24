@@ -10,6 +10,6 @@ services:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_REGION=${AWS_REGION}
-    command: ["--aws.region=us-east-2"]
+    command: ["--aws.region", "${AWS_REGION}"]
     ports:
       - 9383:9383
