@@ -12,3 +12,9 @@ updates:
   directory: "/"
   schedule:
     interval: "weekly"
+  groups:
+    prometheus:
+      patterns:
+      - github.com/prometheus/common
+      - github.com/prometheus/client_model
+      - github.com/prometheus/client_golang
