@@ -16,6 +16,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/health/healthiface"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/version"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -146,7 +147,7 @@ func main() {
 	prometheus.MustRegister(exporter)
 
 	mux := http.NewServeMux()
-	mux.Handle("/metrics", prometheus.Handler())
+	mux.Handle("/metrics", promhttp.Handler())
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`<html>
              <head><title>AWS Health Exporter</title></head>
