@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  aws-health-exporter:
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+    command: ["--aws.region", "${AWS_REGION}"]
+    ports:
+      - 9383:9383
