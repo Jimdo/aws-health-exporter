@@ -1,3 +1,5 @@
+**Note:** _This repository is not actively maintained anymore!_
+
 # AWS Health Exporter [![Build Status](https://travis-ci.com/Jimdo/aws-health-exporter.svg?token=1djnvUyMgtcVefCz54T4&branch=master)](https://travis-ci.com/Jimdo/aws-health-exporter)
 
 This is a simple server that scrapes the [AWS Status](https://status.aws.amazon.com/) (via the [AWS Health API](https://status.aws.amazon.com/)) and exports it via HTTP for Prometheus consumption. That allows you to alert on certain AWS status updates or to just make them visible on your dashboards.
